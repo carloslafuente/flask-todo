@@ -37,5 +37,15 @@ def put_todo(user_id, todo_description):
 
 
 def delete_todo(user_id, todo_id):
-    todo_ref = db.collection('users').document(user_id).collection('todos').document(todo_id)
+    todo_ref = db.collection('users').document(
+        user_id).collection('todos').document(todo_id)
     todo_ref.delete()
+
+
+def update_todo(user_id, todo_id, done):
+    todo_done = not bool(done)
+    todo_ref = db.collection('users').document(
+        user_id).collection('todos').document(todo_id)
+    todo_ref.update({
+        'done': todo_done
+    })
