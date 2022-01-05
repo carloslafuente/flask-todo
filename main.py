@@ -6,6 +6,8 @@ from app import create_app
 
 from app.firestore_service import get_users, get_todos
 
+from flask_login import login_required, current_user
+
 
 app = create_app()
 
@@ -38,10 +40,12 @@ def index() -> dict:
 
 
 @app.route('/hello', methods=['GET'])
+@login_required
 def hello() -> dict:
     # user_ip: str = request.cookies.get('user_ip')
     user_ip: str = session.get('user_ip')
-    username = session.get('username')
+    # username = session.get('username')
+    username = current_user.id
 
     context = {
         'user_ip': user_ip,

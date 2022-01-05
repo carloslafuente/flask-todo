@@ -27,8 +27,8 @@
       <ul class="nav navbar-nav">
         <li><a href="{{ url_for('index') }}">Home</a></li>
         <li><a href="https://platzi.com/">Platzi</a></li>
-        {% if username == None %}
-          <li><a href="{{ url_for('auth.login') }}">Iniciar Sesion</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
         {% endif %}
       </ul>
     </div>
