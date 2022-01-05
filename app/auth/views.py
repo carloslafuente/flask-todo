@@ -1,11 +1,12 @@
 from flask import redirect, render_template, session
 from flask.helpers import flash, url_for
 from flask_login.utils import login_required, login_user, logout_user
-from app.firestore_service import get_user, user_put
+from app.firestore_service import get_user, put_user
 from app.forms import LoginForm
 from app.models import UserData, UserModel
 from . import auth
-from werkzeug.security import generate_password_hash
+
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -23,7 +24,7 @@ def login():
 
         if user_doc.to_dict() is not None:
             password_from_db = user_doc.to_dict()['password']
-            if password == password_from_db:
+            if check_password_hash(password_from_db, password):
                 user_data = UserData(username, password)
                 user = UserModel(user_data)
 
@@ -72,7 +73,7 @@ def signup():
         if user_doc.to_dict() is None:
             password_hash = generate_password_hash(password)
             user_data = UserData(username, password_hash)
-            user_put(user_data)
+            put_user(user_data)
 
             user = UserModel(user_data)
 

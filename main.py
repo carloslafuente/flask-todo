@@ -2,11 +2,15 @@ from flask import request, make_response, redirect, render_template, session
 
 import unittest
 
+from flask.helpers import flash, url_for
+
 from app import create_app
 
-from app.firestore_service import get_users, get_todos
+from app.firestore_service import delete_todo, get_users, get_todos, put_todo
 
 from flask_login import login_required, current_user
+
+from app.forms import TodoForm, DeleteTodoForm
 
 
 app = create_app()
@@ -39,26 +43,43 @@ def index() -> dict:
     return response
 
 
-@app.route('/hello', methods=['GET'])
+@app.route('/hello', methods=['GET', 'POST'])
 @login_required
 def hello() -> dict:
     # user_ip: str = request.cookies.get('user_ip')
     user_ip: str = session.get('user_ip')
     # username = session.get('username')
     username = current_user.id
+    todo_form = TodoForm()
+    delete_form = DeleteTodoForm()
 
     context = {
         'user_ip': user_ip,
-        'todos': map(lambda todo: todo.to_dict(), get_todos(username)),
-        'username': username
+        'todos': get_todos(username),
+        'username': username,
+        'todo_form': todo_form,
+        'delete_form': delete_form,
     }
 
     users = get_users()
 
-    for user in users:
-        print({
-            'username': user.id,
-            'password': user.to_dict()['password']
-        })
+    if todo_form.validate_on_submit():
+        put_todo(username, todo_form.description.data)
+
+        flash('Tu tarea se creo con exito!')
+
+        return redirect(url_for('hello'))
 
     return render_template('hello.html', **context)
+
+
+@app.route('/todos/delete/<todo_id>', methods=['GET', 'POST', 'DELETE'])
+@login_required
+def delete(todo_id):
+    user_id = current_user.id
+
+    delete_todo(user_id, todo_id)
+
+    flash('Eliminado correctamente')
+
+    return redirect(url_for('hello'))
